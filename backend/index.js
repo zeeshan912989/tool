@@ -15,7 +15,11 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-goog-api-key"]
+}));
 app.use(express.json());
 
 app.use("/generate", generateRoute);

@@ -9,6 +9,7 @@ const router = express.Router();
 const CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
 const CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
 const REDIRECT_URI = process.env.TIKTOK_REDIRECT_URI || "http://localhost:5000/tiktok/callback";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 // In-memory token store
 let userToken = null;
@@ -52,7 +53,7 @@ router.get("/auth", (req, res) => {
 // 2. Callback
 router.get("/callback", async (req, res) => {
   const { code } = req.query;
-  if (!code) return res.redirect("http://localhost:3000?error=auth_failed");
+  if (!code) return res.redirect(`${FRONTEND_URL}?error=auth_failed`);
 
   try {
     const response = await axios.post(
@@ -69,12 +70,12 @@ router.get("/callback", async (req, res) => {
 
     if (response.data.access_token) {
       userToken = response.data.access_token;
-      res.redirect("http://localhost:3000?connected=true");
+      res.redirect(`${FRONTEND_URL}?connected=true`);
     } else {
-      res.redirect("http://localhost:3000?error=token_error");
+      res.redirect(`${FRONTEND_URL}?error=token_error`);
     }
   } catch (error) {
-    res.redirect("http://localhost:3000?error=server_error");
+    res.redirect(`${FRONTEND_URL}?error=server_error`);
   }
 });
 

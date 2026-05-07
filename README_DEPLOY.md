@@ -12,6 +12,8 @@ The backend is a separate Express app.
    - `GROQ_API_KEY`
    - `RAPIDAPI_KEY`
    - `APIFY_API_KEY`
+   - `FRONTEND_URL` = `https://tool-tan-nine.vercel.app`
+   - `TIKTOK_REDIRECT_URI` = `https://tiktok-ai-backend-seven.vercel.app/tiktok/callback`
    - `NODE_ENV` = `production`
 5. Once deployed, copy the **Backend URL** (e.g., `https://your-backend.vercel.app`).
 

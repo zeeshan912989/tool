@@ -139,8 +139,9 @@ export default function Home() {
     setResult(null);
     setError("");
 
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/generate`, {
+      const res = await fetch(`${baseUrl}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product, style, platform }),
@@ -166,8 +167,9 @@ export default function Home() {
     setUrlScrapedData("");
     setError("");
 
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/scrape-url`, {
+      const res = await fetch(`${baseUrl}/scrape-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: urlInput, style, platform }),
@@ -193,8 +195,9 @@ export default function Home() {
     if (!tagQuery.trim()) return;
     setTagLoading(true);
     setTagResults(null);
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/hashtags`, {
+      const res = await fetch(`${baseUrl}/hashtags`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: tagQuery }),
@@ -213,8 +216,9 @@ export default function Home() {
     setSpyLoading(true);
     setSpyData(null);
     setError(""); // Clear global error
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/scrape`, {
+      const res = await fetch(`${baseUrl}/scrape`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: spyUsername, platform: spyPlatform }),
@@ -232,8 +236,9 @@ export default function Home() {
 
   const fetchClientDashboard = async () => {
     setClientLoading(true);
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/scrape/dashboard`, {
+      const res = await fetch(`${baseUrl}/scrape/dashboard`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: "bhaijewelers" })
@@ -254,8 +259,9 @@ export default function Home() {
 
   const fetchTrendsData = async () => {
     setTrendLoading(true);
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/trends`, {
+      const res = await fetch(`${baseUrl}/trends`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: trendQuery })
@@ -279,12 +285,13 @@ export default function Home() {
     setImgLoading(true);
     setImgResult(null);
     setImgDescription("");
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
     try {
       const formData = new FormData();
       formData.append("prompt", imgPrompt);
       if (imgFile) formData.append("image", imgFile);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/image-gen/generate`, {
+      const res = await fetch(`${baseUrl}/image-gen/generate`, {
         method: "POST",
         body: formData
       });
