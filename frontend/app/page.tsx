@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Copy, Check, Loader2, Rocket, Zap,
   Hash, MessageSquare, Mic2, Clock, Trash2, ChevronDown,
-  Search, BarChart3, User, Globe, TrendingUp, ShieldCheck,
+  Search, BarChart3, User, Globe, TrendingUp, ShieldCheck, UserCircle,
   ExternalLink, LogOut, Camera, Play, Eye, Target, Link
 } from "lucide-react";
 
@@ -471,7 +471,7 @@ export default function Home() {
             <button className={`nav-item ${activeTab === "calendar" ? "active" : ""}`} onClick={() => setActiveTab("calendar")}><Clock size={20} /><span>Calendar</span></button>
             <button className={`nav-item ${activeTab === "trends" ? "active" : ""}`} onClick={() => setActiveTab("trends")}><TrendingUp size={20} /><span>Trends</span></button>
             <button className={`nav-item ${activeTab === "image-gen" ? "active" : ""}`} onClick={() => setActiveTab("image-gen")}><Sparkles size={20} /><span>Banner</span></button>
-            <button className={`nav-item ${activeTab === "account" ? "active" : ""}`} onClick={() => { setActiveTab("account"); if(!clientData) fetchClientDashboard(); }}><BarChart3 size={20} /><span>Stats</span></button>
+            <button className={`nav-item ${activeTab === "account" ? "active" : ""}`} onClick={() => { setActiveTab("account"); if(!clientData) fetchClientDashboard(); }}><UserCircle size={20} /><span>Account</span></button>
           </nav>
 
           <div className="sidebar-footer">
@@ -499,7 +499,7 @@ export default function Home() {
               { id: "calendar", icon: Clock, label: "Plan" },
               { id: "trends", icon: TrendingUp, label: "Trends" },
               { id: "image-gen", icon: Sparkles, label: "Banner" },
-              { id: "account", icon: BarChart3, label: "Stats" },
+              { id: "account", icon: UserCircle, label: "Account" },
             ].map((item) => (
               <button
                 key={item.id}
@@ -1634,8 +1634,28 @@ export default function Home() {
         .mobile-nav-item.active .icon-wrapper { background: rgba(139, 92, 246, 0.1); }
         .mobile-nav-item span { font-size: 10px; font-weight: 700; }
         
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* ── All Pages Mobile Fixes ── */
+        @media (max-width: 640px) {
+          .upload-zone { padding: 30px 20px !important; }
+          .upload-zone h4 { font-size: 14px; }
+          .upload-zone p { font-size: 10px; }
+          
+          .prompt-chips { gap: 8px !important; }
+          .chip { padding: 8px 12px !important; font-size: 11px !important; }
+          
+          .spy-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+          .spy-header h2 { font-size: 22px !important; }
+          
+          .analysis-box { padding: 16px !important; }
+          .analysis-content p { font-size: 13px !important; line-height: 1.6; }
+          
+          .hashtag-card { padding: 16px !important; }
+          .tag-list { gap: 6px !important; }
+          .tag-pill { font-size: 11px !important; padding: 4px 10px !important; }
+
+          .trend-chart-container { height: 220px !important; margin: 10px -10px; }
+          .trend-item { flex-direction: column; gap: 12px; }
+        }
 
         .sidebar-brand {
           display: flex;
