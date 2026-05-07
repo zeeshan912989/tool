@@ -398,6 +398,29 @@ export default function Home() {
 
   return (
     <>
+    <div className="min-h-screen bg-[#060608]">
+      {/* Mobile Top Header */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl sticky top-0 z-[100]">
+        <div className="flex items-center gap-2">
+          <div className="brand-icon p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-purple-500/20">
+            <Zap size={18} className="text-white" />
+          </div>
+          <span className="text-sm font-bold bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">Jewellery AI</span>
+        </div>
+        <div className="user-pill p-1.5 bg-white/5 rounded-full border border-white/10">
+          {isConnected ? (
+            <div className="flex items-center gap-2 px-2">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=diamond" className="w-5 h-5 rounded-full" />
+              <span className="text-[10px] font-medium text-slate-300">Connected</span>
+            </div>
+          ) : (
+            <div className="px-2">
+              <span className="text-[10px] font-medium text-purple-400">Not Linked</span>
+            </div>
+          )}
+        </div>
+      </div>
+
       <main className="dashboard-layout">
         {/* ── Sidebar Navigation ─────────────────────── */}
         <aside className="sidebar">
@@ -1503,6 +1526,15 @@ export default function Home() {
           background: #060608;
         }
 
+        @media (max-width: 768px) {
+          .dashboard-layout {
+            flex-direction: column;
+            height: auto;
+            min-height: 100vh;
+            overflow: visible;
+          }
+        }
+
         /* ── Sidebar ─────────────────────────────────── */
         .sidebar {
           width: 260px;
@@ -1513,6 +1545,40 @@ export default function Home() {
           flex-direction: column;
           padding: 24px 16px;
           z-index: 50;
+        }
+
+        @media (max-width: 768px) {
+          .sidebar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            flex-direction: row;
+            padding: 8px 12px;
+            border-right: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(10, 10, 15, 0.95);
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+          }
+          .sidebar-brand, .sidebar-footer { display: none; }
+          .sidebar-nav {
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-around;
+            gap: 4px;
+          }
+          .nav-item {
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px 4px;
+            font-size: 10px;
+            align-items: center;
+            flex: 1;
+          }
+          .nav-item svg { width: 18px; height: 18px; }
         }
 
         .sidebar-brand {
@@ -1610,9 +1676,18 @@ export default function Home() {
         /* ── Main Stage ──────────────────────────────── */
         .main-stage {
           flex: 1;
-          height: 100vh;
           overflow-y: auto;
+          padding: 48px;
           position: relative;
+        }
+
+        @media (max-width: 768px) {
+          .main-stage {
+            padding: 20px 16px 100px; /* Extra bottom padding for mobile nav */
+          }
+        }
+        
+        .main-stage {
           background-image: 
             radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
             radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
@@ -1851,6 +1926,18 @@ export default function Home() {
           gap: 32px; 
           background: linear-gradient(145deg, rgba(30, 30, 40, 0.8) 0%, rgba(18, 18, 26, 0.9) 100%);
           border-left: 4px solid #ef4444;
+        }
+
+        @media (max-width: 640px) {
+          .spy-profile-card {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            padding: 24px 20px;
+          }
+          .spy-avatar-col { min-width: unset; }
+          .spy-stat-card .stat-value { font-size: 18px; }
         }
         
         .spy-avatar-col { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 120px; }
