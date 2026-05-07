@@ -162,10 +162,13 @@ export default function Home() {
         body: JSON.stringify({ product, style, platform }),
       });
       const data = await res.json();
-      if (data.error) {
+      if (!data.error) {
         setResult(data);
         saveToHistory(data);
         showSnackbar("Content generated successfully!", "success");
+      } else {
+        setError(data.error);
+        showSnackbar(data.error, "error");
       }
     } catch {
       showSnackbar("Cannot connect to backend.", "error");
