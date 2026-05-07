@@ -1983,6 +1983,16 @@ export default function Home() {
         .spy-stat-card .stat-label { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
         .spy-stat-card .stat-value { font-size: 22px; font-weight: 800; color: #f8fafc; }
 
+        @media (max-width: 768px) {
+          .spy-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+          .spy-stat-card .stat-value { font-size: 16px; }
+          .spy-stat-card .stat-label { font-size: 10px; }
+        }
+
         /* ── Form Inputs ─────────────────────────────── */
         .main-form { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
         .input-group label, .selector-group label {
@@ -2303,9 +2313,16 @@ export default function Home() {
         /* ── Responsive ───────────────────────────────── */
         @media (max-width: 600px) {
           .main-container { padding: 40px 16px 80px; }
-          button.primary { min-width: unset; }
-          .actions-row { flex-direction: column; }
+          button.primary { min-width: unset; width: 100%; }
+          .actions-row { flex-direction: column; width: 100%; }
           .secondary-btn { width: 100%; justify-content: center; }
+          .pills { gap: 8px; }
+          .pill { padding: 8px 14px; font-size: 12px; }
+          .history-panel { padding: 16px; }
+          .history-product { font-size: 12px; }
+          .history-meta .time { display: none; }
+          .search-bar { flex-direction: column; height: auto; padding: 12px; gap: 12px; }
+          .search-bar input { border-bottom: 1px solid rgba(255,255,255,0.1) !important; padding-bottom: 12px !important; }
         }
       `}</style>
       </main>
