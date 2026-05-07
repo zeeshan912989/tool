@@ -431,7 +431,7 @@ export default function Home() {
       {/* Mobile Top Header */}
       <header className="md-hidden-header">
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", display: "flex", alignItems: "center", justifyCenter: "center", color: "white", boxShadow: "0 4px 12px rgba(124, 58, 237, 0.3)" }}>
+          <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", boxShadow: "0 4px 12px rgba(124, 58, 237, 0.3)" }}>
             <Zap size={18} style={{ margin: "auto" }} />
           </div>
           <span style={{ fontWeight: 800, color: "white", fontSize: "16px", letterSpacing: "-0.02em" }}>Jewellery AI</span>
