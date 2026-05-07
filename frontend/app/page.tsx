@@ -38,11 +38,12 @@ const PLATFORMS = [
   { id: "youtube",   label: "YT Shorts",  icon: "▶️" },
 ];
 
-function CopyButton({ text, size = "sm" }: { text: string; size?: "sm" | "md" }) {
+function CopyButton({ text, size = "sm", onCopy }: { text: string; size?: "sm" | "md"; onCopy?: () => void }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    if (onCopy) onCopy();
     setTimeout(() => setCopied(false), 2000);
   };
   return (
@@ -105,6 +106,20 @@ export default function Home() {
   const [imgLoading, setImgLoading] = useState(false);
   const [imgDescription, setImgDescription] = useState("");
 
+  const isConnected = !!clientData;
+
+  // Snackbar State
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info"; visible: boolean }>({
+    message: "",
+    type: "success",
+    visible: false
+  });
+
+  const showSnackbar = (message: string, type: "success" | "error" | "info" = "success") => {
+    setSnackbar({ message, type, visible: true });
+    setTimeout(() => setSnackbar(prev => ({ ...prev, visible: false })), 4000);
+  };
+
   // Load initial data and handle redirect callback
   useEffect(() => {
     const saved = localStorage.getItem("tiktok-ai-history");
@@ -148,12 +163,12 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.error) {
-        setError(data.error);
-      } else {
         setResult(data);
         saveToHistory(data);
+        showSnackbar("Content generated successfully!", "success");
       }
     } catch {
+      showSnackbar("Cannot connect to backend.", "error");
       setError("Cannot connect to backend. Make sure it's running on port 5000.");
     } finally {
       setLoading(false);
@@ -204,7 +219,9 @@ export default function Home() {
       });
       const data = await res.json();
       setTagResults(data);
+      showSnackbar("Hashtags found!", "success");
     } catch {
+      showSnackbar("Hashtag research failed.", "error");
       setError("Failed to connect to hashtag researcher.");
     } finally {
       setTagLoading(false);
@@ -225,9 +242,9 @@ export default function Home() {
       });
       const data = await res.json();
       setSpyData(data);
+      showSnackbar("Competitor data scraped!", "success");
     } catch {
-      // If server fails or is blocked, the backend already handles fallback, 
-      // but if the fetch itself fails:
+      showSnackbar("Competitor scraping failed.", "error");
       setError("Cannot reach the research server. Please try again.");
     } finally {
       setSpyLoading(false);
@@ -246,12 +263,15 @@ export default function Home() {
       const data = await res.json();
       if (!data.error) {
         setClientData(data);
+        showSnackbar("Dashboard updated!", "success");
       } else {
         alert(data.error);
+        showSnackbar("Dashboard update failed.", "error");
       }
     } catch (e) {
       console.error(e);
       alert("Failed to load dashboard");
+      showSnackbar("Failed to load dashboard.", "error");
     } finally {
       setClientLoading(false);
     }
@@ -269,12 +289,15 @@ export default function Home() {
       const data = await res.json();
       if (!data.error) {
         setTrendData(data.trend);
+        showSnackbar("Trends updated!", "success");
       } else {
         alert(data.error);
+        showSnackbar("Trends update failed.", "error");
       }
     } catch (e) {
       console.error(e);
       alert("Failed to fetch Google Trends data");
+      showSnackbar("Failed to fetch trends.", "error");
     } finally {
       setTrendLoading(false);
     }
@@ -299,12 +322,15 @@ export default function Home() {
       if (data.image) {
         setImgResult(data.image);
         setImgDescription(data.description || "");
+        showSnackbar("Banner generated successfully!", "success");
       } else {
         alert(data.error || "Image generation failed");
+        showSnackbar("Banner generation failed.", "error");
       }
     } catch (e) {
       console.error(e);
       alert("Failed to connect to Gemini API");
+      showSnackbar("Connection error.", "error");
     } finally {
       setImgLoading(false);
     }
@@ -343,6 +369,7 @@ export default function Home() {
     setScheduledPosts(newSchedule);
     localStorage.setItem("tiktok-ai-schedule", JSON.stringify(newSchedule));
     setDraggedItem(null);
+    showSnackbar("Post scheduled successfully!", "success");
   };
 
   const removeFromSchedule = (day: string, id: string) => {
@@ -350,6 +377,7 @@ export default function Home() {
     newSchedule[day] = newSchedule[day].filter(post => post.id !== id);
     setScheduledPosts(newSchedule);
     localStorage.setItem("tiktok-ai-schedule", JSON.stringify(newSchedule));
+    showSnackbar("Post removed from schedule.", "info");
   };
 
   const onTimeChange = (day: string, id: string, newTime: string) => {
@@ -382,6 +410,7 @@ export default function Home() {
 
     setScheduledPosts(newSchedule);
     localStorage.setItem("tiktok-ai-schedule", JSON.stringify(newSchedule));
+    showSnackbar("Weekly schedule auto-planned!", "success");
   };
 
   const loadFromHistory = (item: HistoryItem) => {
@@ -400,30 +429,30 @@ export default function Home() {
     <>
     <div className="min-h-screen bg-[#060608]">
       {/* Mobile Top Header */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl sticky top-0 z-[100]">
-        <div className="flex items-center gap-2">
-          <div className="brand-icon p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-purple-500/20">
-            <Zap size={18} className="text-white" />
+      <header className="md-hidden-header">
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", display: "flex", alignItems: "center", justifyCenter: "center", color: "white", boxShadow: "0 4px 12px rgba(124, 58, 237, 0.3)" }}>
+            <Zap size={18} style={{ margin: "auto" }} />
           </div>
-          <span className="text-sm font-bold bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">Jewellery AI</span>
+          <span style={{ fontWeight: 800, color: "white", fontSize: "16px", letterSpacing: "-0.02em" }}>Jewellery AI</span>
         </div>
-        <div className="user-pill p-1.5 bg-white/5 rounded-full border border-white/10">
+        <div className="connection-pill">
           {isConnected ? (
-            <div className="flex items-center gap-2 px-2">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=diamond" className="w-5 h-5 rounded-full" />
-              <span className="text-[10px] font-medium text-slate-300">Connected</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.1)", padding: "6px 12px", borderRadius: "100px", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
+              <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981" }}></div>
+              <span style={{ fontSize: "10px", fontWeight: 700, color: "#10b981", textTransform: "uppercase" }}>Linked</span>
             </div>
           ) : (
-            <div className="px-2">
-              <span className="text-[10px] font-medium text-purple-400">Not Linked</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255, 255, 255, 0.05)", padding: "6px 12px", borderRadius: "100px", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
+              <span style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>Off</span>
             </div>
           )}
         </div>
-      </div>
+      </header>
 
       <main className="dashboard-layout">
-        {/* ── Sidebar Navigation ─────────────────────── */}
-        <aside className="sidebar">
+        {/* ── Sidebar Navigation (Desktop Only) ─────── */}
+        <aside className="sidebar desktop-sidebar">
           <div className="sidebar-brand">
             <div className="brand-icon">
               <Rocket size={24} />
@@ -435,62 +464,14 @@ export default function Home() {
           </div>
 
           <nav className="sidebar-nav">
-            <button 
-              className={`nav-item ${activeTab === "generator" ? "active" : ""}`}
-              onClick={() => setActiveTab("generator")}
-            >
-              <Zap size={20} />
-              <span>Generator</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "url-to-post" ? "active" : ""}`}
-              onClick={() => setActiveTab("url-to-post")}
-            >
-              <Link size={20} />
-              <span>URL to Post</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "hashtags" ? "active" : ""}`}
-              onClick={() => setActiveTab("hashtags")}
-            >
-              <Hash size={20} />
-              <span>Hashtags</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "spy" ? "active" : ""}`}
-              onClick={() => setActiveTab("spy")}
-            >
-              <Eye size={20} />
-              <span>Spy Tool</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "calendar" ? "active" : ""}`}
-              onClick={() => setActiveTab("calendar")}
-            >
-              <Clock size={20} />
-              <span>Calendar</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "trends" ? "active" : ""}`}
-              onClick={() => setActiveTab("trends")}
-            >
-              <TrendingUp size={20} />
-              <span>Google Trends</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "image-gen" ? "active" : ""}`}
-              onClick={() => setActiveTab("image-gen")}
-            >
-              <Sparkles size={20} />
-              <span>AI Banner</span>
-            </button>
-            <button 
-              className={`nav-item ${activeTab === "account" ? "active" : ""}`}
-              onClick={() => { setActiveTab("account"); if(!clientData) fetchClientDashboard(); }}
-            >
-              <BarChart3 size={20} />
-              <span>Client Dashboard</span>
-            </button>
+            <button className={`nav-item ${activeTab === "generator" ? "active" : ""}`} onClick={() => setActiveTab("generator")}><Zap size={20} /><span>Generator</span></button>
+            <button className={`nav-item ${activeTab === "url-to-post" ? "active" : ""}`} onClick={() => setActiveTab("url-to-post")}><Link size={20} /><span>Scraper</span></button>
+            <button className={`nav-item ${activeTab === "hashtags" ? "active" : ""}`} onClick={() => setActiveTab("hashtags")}><Hash size={20} /><span>Tags</span></button>
+            <button className={`nav-item ${activeTab === "spy" ? "active" : ""}`} onClick={() => setActiveTab("spy")}><Eye size={20} /><span>Spy Tool</span></button>
+            <button className={`nav-item ${activeTab === "calendar" ? "active" : ""}`} onClick={() => setActiveTab("calendar")}><Clock size={20} /><span>Calendar</span></button>
+            <button className={`nav-item ${activeTab === "trends" ? "active" : ""}`} onClick={() => setActiveTab("trends")}><TrendingUp size={20} /><span>Trends</span></button>
+            <button className={`nav-item ${activeTab === "image-gen" ? "active" : ""}`} onClick={() => setActiveTab("image-gen")}><Sparkles size={20} /><span>Banner</span></button>
+            <button className={`nav-item ${activeTab === "account" ? "active" : ""}`} onClick={() => { setActiveTab("account"); if(!clientData) fetchClientDashboard(); }}><BarChart3 size={20} /><span>Stats</span></button>
           </nav>
 
           <div className="sidebar-footer">
@@ -501,14 +482,38 @@ export default function Home() {
                   <span>{clientData.profile.username}</span>
                 </div>
               ) : (
-                <button className="connect-mini" onClick={() => setActiveTab("account")}>
-                  <ShieldCheck size={14} />
-                  Client Account
-                </button>
+                <button className="connect-mini" onClick={() => setActiveTab("account")}><ShieldCheck size={14} />Client Account</button>
               )}
             </div>
           </div>
         </aside>
+
+        {/* ── Mobile Navigation Bar (Mobile Only) ─────── */}
+        <nav className="mobile-nav">
+          <div className="mobile-nav-container no-scrollbar">
+            {[
+              { id: "generator", icon: Zap, label: "Magic" },
+              { id: "url-to-post", icon: Link, label: "Scrape" },
+              { id: "hashtags", icon: Hash, label: "Tags" },
+              { id: "spy", icon: Eye, label: "Spy" },
+              { id: "calendar", icon: Clock, label: "Plan" },
+              { id: "trends", icon: TrendingUp, label: "Trends" },
+              { id: "image-gen", icon: Sparkles, label: "Banner" },
+              { id: "account", icon: BarChart3, label: "Stats" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`mobile-nav-item ${activeTab === item.id ? "active" : ""}`}
+              >
+                <div className="icon-wrapper">
+                  <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+                </div>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
 
         {/* ── Main Content Area ──────────────────────── */}
         <section className="main-stage">
@@ -708,7 +713,7 @@ export default function Home() {
                         <h4>💎 Niche Tags</h4>
                         <div className="hashtags-wrap">
                           {tagResults.niche.map((t: string, i: number) => (
-                            <span key={i} className="hashtag-chip niche" onClick={() => navigator.clipboard.writeText(t)}>{t}</span>
+                            <span key={i} className="hashtag-chip niche" onClick={() => { navigator.clipboard.writeText(t); showSnackbar("Copied tag!", "info"); }}>{t}</span>
                           ))}
                         </div>
                       </div>
@@ -716,7 +721,7 @@ export default function Home() {
                         <h4>💕 Community</h4>
                         <div className="hashtags-wrap">
                           {tagResults.community.map((t: string, i: number) => (
-                            <span key={i} className="hashtag-chip community" onClick={() => navigator.clipboard.writeText(t)}>{t}</span>
+                            <span key={i} className="hashtag-chip community" onClick={() => { navigator.clipboard.writeText(t); showSnackbar("Copied tag!", "info"); }}>{t}</span>
                           ))}
                         </div>
                       </div>
@@ -724,7 +729,7 @@ export default function Home() {
                         <h4>🚀 Broad</h4>
                         <div className="hashtags-wrap">
                           {tagResults.broad.map((t: string, i: number) => (
-                            <span key={i} className="hashtag-chip broad" onClick={() => navigator.clipboard.writeText(t)}>{t}</span>
+                            <span key={i} className="hashtag-chip broad" onClick={() => { navigator.clipboard.writeText(t); showSnackbar("Copied tag!", "info"); }}>{t}</span>
                           ))}
                         </div>
                       </div>
@@ -1437,7 +1442,7 @@ export default function Home() {
                     <Zap size={16} className="icon-zap" />
                     <span>Viral Blueprint {activeTab === "url-to-post" && "(From URL)"}</span>
                   </div>
-                  <CopyButton text={activeTab === "url-to-post" ? `HOOKS:\n${urlResult?.hooks?.join("\n")}\n\nCAPTION:\n${urlResult?.caption}\n\nHASHTAGS:\n${urlResult?.hashtags?.join(" ")}` : allText} size="md" />
+                  <CopyButton text={activeTab === "url-to-post" ? `HOOKS:\n${urlResult?.hooks?.join("\n")}\n\nCAPTION:\n${urlResult?.caption}\n\nHASHTAGS:\n${urlResult?.hashtags?.join(" ")}` : allText} size="md" onCopy={() => showSnackbar("All content copied!", "success")} />
                 </div>
 
                 {/* Hooks Card */}
@@ -1457,7 +1462,7 @@ export default function Home() {
                       <div key={i} className="hook-item">
                         <span className="hook-number">{i + 1}</span>
                         <p>{hook}</p>
-                        <CopyButton text={hook} />
+                        <CopyButton text={hook} onCopy={() => showSnackbar("Hook copied!", "info")} />
                       </div>
                     ))}
                   </div>
@@ -1547,39 +1552,90 @@ export default function Home() {
           z-index: 50;
         }
 
+        /* ── Visibility Control ── */
+        .desktop-sidebar { display: flex; }
+        .mobile-nav { display: none; }
+        .md-hidden-header { display: none; }
+
         @media (max-width: 768px) {
-          .sidebar {
+          .desktop-sidebar { display: none !important; }
+          .mobile-nav { 
+            display: flex; 
             position: fixed;
             bottom: 0;
             left: 0;
-            width: 100%;
-            height: 70px;
-            flex-direction: row;
-            padding: 8px 12px;
-            border-right: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(10, 10, 15, 0.95);
-            justify-content: space-around;
+            right: 0;
+            height: 72px;
+            background: rgba(13, 13, 18, 0.95);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 2000;
+            padding: 0 10px;
             align-items: center;
-            z-index: 1000;
           }
-          .sidebar-brand, .sidebar-footer { display: none; }
-          .sidebar-nav {
-            flex-direction: row;
-            width: 100%;
-            justify-content: space-around;
-            gap: 4px;
+          .md-hidden-header { 
+            display: flex; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 2000;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
           }
-          .nav-item {
+          
+          .dashboard-layout {
             flex-direction: column;
-            gap: 4px;
-            padding: 8px 4px;
-            font-size: 10px;
-            align-items: center;
-            flex: 1;
+            height: auto;
+            min-height: 100vh;
+            overflow: visible;
           }
-          .nav-item svg { width: 18px; height: 18px; }
+          .main-stage {
+            padding: 85px 16px 110px !important;
+            height: auto !important;
+            min-height: calc(100vh - 150px);
+          }
         }
+        
+        .mobile-nav-container {
+          display: flex;
+          width: 100%;
+          items-center: center;
+          justify-content: flex-start;
+          gap: 5px;
+          overflow-x: auto;
+          height: 100%;
+          align-items: center;
+        }
+        .mobile-nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-width: 68px;
+          gap: 4px;
+          background: transparent;
+          border: none;
+          color: #64748b;
+          transition: all 0.3s;
+          padding: 8px 0;
+        }
+        .mobile-nav-item.active { color: #a78bfa; }
+        .mobile-nav-item .icon-wrapper {
+          padding: 6px;
+          border-radius: 12px;
+          transition: all 0.3s;
+        }
+        .mobile-nav-item.active .icon-wrapper { background: rgba(139, 92, 246, 0.1); }
+        .mobile-nav-item span { font-size: 10px; font-weight: 700; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .sidebar-brand {
           display: flex;
@@ -1682,8 +1738,21 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
-          .main-stage {
-            padding: 20px 16px 100px; /* Extra bottom padding for mobile nav */
+          .calendar-container {
+            flex-direction: column;
+            height: auto !important;
+            gap: 16px;
+          }
+          .calendar-sidebar {
+            width: 100% !important;
+            max-height: 300px;
+          }
+          .week-columns {
+            grid-template-columns: 1fr !important;
+            gap: 16px;
+          }
+          .day-column {
+            min-height: auto !important;
           }
         }
         
@@ -1938,6 +2007,7 @@ export default function Home() {
           }
           .spy-avatar-col { min-width: unset; }
           .spy-stat-card .stat-value { font-size: 18px; }
+          .spy-video-grid { grid-template-columns: 1fr !important; }
         }
         
         .spy-avatar-col { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 120px; }
@@ -1989,8 +2059,9 @@ export default function Home() {
             grid-template-columns: 1fr 1fr;
             gap: 12px;
           }
-          .spy-stat-card .stat-value { font-size: 16px; }
-          .spy-stat-card .stat-label { font-size: 10px; }
+          .spy-stat-card .stat-value { font-size: 18px; }
+          .spy-stat-card .stat-label { font-size: 9px; }
+          .ai-analysis-section { padding: 16px !important; }
         }
 
         /* ── Form Inputs ─────────────────────────────── */
@@ -2312,20 +2383,106 @@ export default function Home() {
 
         /* ── Responsive ───────────────────────────────── */
         @media (max-width: 600px) {
-          .main-container { padding: 40px 16px 80px; }
-          button.primary { min-width: unset; width: 100%; }
-          .actions-row { flex-direction: column; width: 100%; }
-          .secondary-btn { width: 100%; justify-content: center; }
-          .pills { gap: 8px; }
-          .pill { padding: 8px 14px; font-size: 12px; }
-          .history-panel { padding: 16px; }
-          .history-product { font-size: 12px; }
+          .main-stage { padding: 16px 12px 100px; }
+          .stage-container { max-width: 100%; }
+          .glass-card { padding: 16px; }
+          .main-form { padding: 16px; }
+          
+          h1 { font-size: 24px !important; }
+          h2 { font-size: 20px !important; }
+          h3 { font-size: 18px !important; }
+
+          .pills { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+          }
+          .pill { 
+            width: 100%; 
+            justify-content: center; 
+            padding: 10px; 
+            font-size: 12px; 
+          }
+
+          button.primary { min-width: unset; width: 100%; height: 50px; font-size: 15px; }
+          .actions-row { flex-direction: column; width: 100%; gap: 12px; }
+          .secondary-btn { width: 100%; justify-content: center; height: 46px; }
+          
+          .history-panel { padding: 16px; margin-top: 12px; }
+          .history-product { font-size: 12px; font-weight: 700; }
           .history-meta .time { display: none; }
-          .search-bar { flex-direction: column; height: auto; padding: 12px; gap: 12px; }
-          .search-bar input { border-bottom: 1px solid rgba(255,255,255,0.1) !important; padding-bottom: 12px !important; }
+          
+          .search-bar { 
+            flex-direction: column; 
+            height: auto; 
+            padding: 8px; 
+            gap: 8px; 
+            background: rgba(255,255,255,0.03);
+          }
+          .search-bar input { 
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important; 
+            padding: 12px !important; 
+            text-align: center;
+          }
+          .search-btn { width: 100%; }
+          
+          .result-grid { grid-template-columns: 1fr !important; }
+          .card-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+          .card-header-right { width: 100%; justify-content: space-between; }
+          
+          .trend-chart-container { height: 250px; }
+          .trend-stats { grid-template-columns: 1fr !important; }
+        }
+
+        .snackbar-toast {
+          position: fixed;
+          bottom: 90px;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 12px 24px;
+          border-radius: 100px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          z-index: 9999;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: white;
+        }
+        .snackbar-toast.success { background: rgba(16, 185, 129, 0.9); border-color: rgba(16, 185, 129, 0.4); }
+        .snackbar-toast.error { background: rgba(239, 68, 68, 0.9); border-color: rgba(239, 68, 68, 0.4); }
+        .snackbar-toast.info { background: rgba(139, 92, 246, 0.9); border-color: rgba(139, 92, 246, 0.4); }
+
+        @media (min-width: 769px) {
+          .snackbar-toast {
+            bottom: 40px;
+            left: calc(260px + (100% - 260px) / 2);
+          }
         }
       `}</style>
       </main>
+
+      {/* Global Snackbar */}
+      <AnimatePresence>
+        {snackbar.visible && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className={`snackbar-toast ${snackbar.type}`}
+          >
+            {snackbar.type === "success" && <ShieldCheck size={18} />}
+            {snackbar.type === "error" && <Trash2 size={18} />}
+            {snackbar.type === "info" && <Sparkles size={18} />}
+            <span>{snackbar.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
     </>
   );
 }
